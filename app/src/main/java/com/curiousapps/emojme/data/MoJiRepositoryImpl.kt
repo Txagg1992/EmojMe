@@ -4,8 +4,9 @@ import com.curiousapps.emojme.domain.MoJiRepository
 import com.curiousapps.emojme.domain.MoJis
 import com.curiousapps.emojme.network.MoJApi
 import okio.IOException
+import javax.inject.Inject
 
-class MoJiRepositoryImpl(
+class MoJiRepositoryImpl @Inject constructor (
     private val api: MoJApi
 ): MoJiRepository {
     override suspend fun fetchAllMojis(): Result<List<MoJis>> {
