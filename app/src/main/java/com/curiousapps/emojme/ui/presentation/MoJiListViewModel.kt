@@ -8,6 +8,8 @@ import com.curiousapps.emojme.util.IO_DISPATCHER
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
+import kotlinx.coroutines.flow.asStateFlow
+import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
 
@@ -17,9 +19,13 @@ class MoJiListViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(MoJiScreenState())
+    val stte = _state.asStateFlow()
     val state: Flow<MoJiScreenState>
         get() = _state
 
+init {
+    fetchAllMojis()
+}
 
     private fun fetchAllMojis() {
         viewModelScope.launch(IO_DISPATCHER) {
@@ -42,8 +48,21 @@ class MoJiListViewModel @Inject constructor(
         }
     }
 
+    fun getMoji(){
+        _state.update { it.copy(
+            selectMoJi = _state.value.selectMoJi
+        ) }
+    }
+
+    fun dismissDialog(){
+        _state.update { it.copy(
+            selectMoJi = null
+        ) }
+    }
+
     data class MoJiScreenState(
         val mojiList: List<MoJis> = emptyList(),
-        val isLoading: Boolean = true
+        val isLoading: Boolean = true,
+        val selectMoJi: MoJis?  = null
     )
 }
