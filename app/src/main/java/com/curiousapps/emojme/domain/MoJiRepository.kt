@@ -7,4 +7,6 @@ import dagger.hilt.android.scopes.ActivityScoped
 interface MoJiRepository {
 
     suspend fun fetchAllMojis(): Result<List<MoJis>>
+
+    suspend fun fetchMeMoj(slug: String): Result<Moj>
 }

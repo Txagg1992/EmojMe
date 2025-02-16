@@ -4,11 +4,11 @@ import androidx.lifecycle.ViewModel
 import androidx.lifecycle.viewModelScope
 import com.curiousapps.emojme.domain.MoJiRepository
 import com.curiousapps.emojme.domain.MoJis
+import com.curiousapps.emojme.domain.Moj
 import com.curiousapps.emojme.util.IO_DISPATCHER
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
-import kotlinx.coroutines.flow.asStateFlow
 import kotlinx.coroutines.flow.update
 import kotlinx.coroutines.launch
 import javax.inject.Inject
@@ -19,7 +19,6 @@ class MoJiListViewModel @Inject constructor(
 ) : ViewModel() {
 
     private val _state = MutableStateFlow(MoJiScreenState())
-    val stte = _state.asStateFlow()
     val state: Flow<MoJiScreenState>
         get() = _state
 
@@ -32,10 +31,10 @@ init {
             val result = repository.fetchAllMojis()
             when {
                 result.isSuccess -> {
-                    _state.value = MoJiScreenState(
+                    _state.update { it.copy(
                         mojiList = result.getOrNull()!!,
                         isLoading = false
-                    )
+                    ) }
                 }
 
                 result.isFailure -> {
@@ -48,21 +47,30 @@ init {
         }
     }
 
-    fun getMoji(){
-        _state.update { it.copy(
-            selectMoJi = _state.value.selectMoJi
-        ) }
+    fun fetchMeMoj(slug: String){
+        viewModelScope.launch {
+            val result = repository.fetchMeMoj(slug)
+            when{
+                result.isSuccess -> {
+                    _state.value = MoJiScreenState(
+                        selectMoJi = result.getOrNull()!!,
+                        isLoading = false
+                    )
+                }
+                result.isFailure -> {
+                    _state.update { it.copy(
+                        isLoading = false,
+                        //showDialog = false
+                    ) }
+                }
+            }
+        }
     }
 
-    fun dismissDialog(){
-        _state.update { it.copy(
-            selectMoJi = null
-        ) }
-    }
 
     data class MoJiScreenState(
         val mojiList: List<MoJis> = emptyList(),
         val isLoading: Boolean = true,
-        val selectMoJi: MoJis?  = null
+        val selectMoJi: Moj?  = null,
     )
 }
